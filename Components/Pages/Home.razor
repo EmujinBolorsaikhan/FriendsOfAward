@@ -1,7 +1,206 @@
-﻿@page "/"
+﻿@* @page "/"
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diplomarbeit Buttons</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Falls du eine separate CSS-Datei verwendest -->
+</head>
 
-Welcome to your new app.
+
+<h1>Diplomarbeiten</h1>
+
+<div class="legend-box">
+    <p>Wählen Sie eine Diplomarbeit aus:</p>
+    <p class="small-note">Klicken Sie auf die Schaltflächen, um eine Auswahl zu treffen.</p>
+</div>
+
+<div id="buttonGrid">
+    @for (int i = 0; i < Buttons.Count; i++)
+    {
+        <button class="@GetCssClass(i)" @onclick="() => Favorite(i)">
+            Diplomarbeit @(i + 1)
+        </button>
+    }
+</div>
+
+<div id="info">Weitere Informationen zur Auswahl der Diplomarbeit</div>
+
+<div id="message">@Message</div>
+
+<button id="submitBtn">Absenden</button>
+
+<div id="adminToggle">⚙️</div>
+
+<div id="adminPanel">
+    <p>Admin-Panel</p>
+</div>
+
+@code {
+
+    private enum State { Normal, Favorit, Super }
+
+    private List<State> Buttons = Enumerable.Repeat(State.Normal, 20).ToList();
+
+    public string Message = "";
+
+    private int FavoritCount => Buttons.Count(s => s == State.Favorit);
+    private int SuperIndex => Buttons.FindIndex(s => s == State.Super);
+
+    // --------------------------
+    //  FAVORITEN-LOGIK
+    // --------------------------
+    internal void Favorite(int index)
+    {
+        var state = Buttons[index];
+
+        // Normal → Favorit (max 5)
+        if (state == State.Normal)
+        {
+            if (FavoritCount >= 5)
+            {
+                Message = "Maximal 5 Favoriten!";
+                return;
+            }
+
+            Buttons[index] = State.Favorit;
+            Message = $"Favorit gesetzt: Diplomarbeit {index + 1}";
+            return;
+        }
+
+        // Favorit → Superfavorit (nur 1 erlaubt)
+        if (state == State.Favorit)
+        {
+            // Falls bereits ein Super existiert → zurücksetzen
+            if (SuperIndex != -1)
+                Buttons[SuperIndex] = State.Favorit;
+
+            Buttons[index] = State.Super;
+            Message = $"Superfavorit gesetzt: Diplomarbeit {index + 1}";
+            return;
+        }
+
+        // Superfavorit → Normal
+        if (state == State.Super)
+        {
+            Buttons[index] = State.Normal;
+            Message = $"Superfavorit entfernt: Diplomarbeit {index + 1}";
+        }
+    }
+
+    // --------------------------
+    // CSS Klassen passend zu deinem styles.css
+    // --------------------------
+    private string GetCssClass(int index)
+    {
+        return Buttons[index] switch
+        {
+            State.Favorit => "button favorit",
+            State.Super => "button topfavorit",
+            _ => "button"
+        };
+    }
+}
+ *@
+
+
+
+
+@page "/"
+
+<h1>Diplomarbeiten</h1>
+
+<div class="legend-box">
+    <p>Wählen Sie eine Diplomarbeit aus:</p>
+    <p class="small-note">Klicken Sie auf die Schaltflächen, um eine Auswahl zu treffen.</p>
+</div>
+
+<div id="buttonGrid">
+    @for (int i = 0; i < Buttons.Count; i++)
+    {
+        <button class="@GetCssClass(i)" @onclick="() => OnButtonClick(i)">
+            Diplomarbeit @(i + 1)
+        </button>
+    }
+</div>
+
+<div id="info">Weitere Informationen zur Auswahl der Diplomarbeit</div>
+
+<div id="message">@Message</div>
+
+<button id="submitBtn" disabled="@(!CanSubmit)">Absenden</button>
+
+<div id="adminToggle">⚙️</div>
+
+<div id="adminPanel">
+    <p>Admin-Panel</p>
+</div>
+
+
+@code {
+
+    private enum BtnState { Normal, Favorit, Super }
+
+    private List<BtnState> Buttons = Enumerable.Repeat(BtnState.Normal, 20).ToList();
+
+    private string Message = "";
+    private bool CanSubmit => Buttons.Any(b => b == BtnState.Super);
+
+    private int FavoritCount => Buttons.Count(b => b == BtnState.Favorit);
+    private int SuperIndex => Buttons.FindIndex(b => b == BtnState.Super);
+
+
+    private void OnButtonClick(int index)
+    {
+        var state = Buttons[index];
+
+        // 1. Normal → Favorit (max 5)
+        if (state == BtnState.Normal)
+        {
+            if (FavoritCount >= 5)
+            {
+                Message = "Maximal 5 Favoriten erlaubt.";
+                return;
+            }
+
+            Buttons[index] = BtnState.Favorit;
+            Message = $"Favorit gewählt: Diplomarbeit {index + 1}";
+            return;
+        }
+
+        // 2. Favorit → Superfavorit (nur 1 erlaubt)
+        if (state == BtnState.Favorit)
+        {
+            if (SuperIndex != -1)
+            {
+                Buttons[SuperIndex] = BtnState.Favorit;
+            }
+
+            Buttons[index] = BtnState.Super;
+            Message = $"Super-Favorit gewählt: Diplomarbeit {index + 1}";
+            return;
+        }
+
+        // 3. Super → Normal (entfernen)
+        if (state == BtnState.Super)
+        {
+            Buttons[index] = BtnState.Normal;
+            Message = $"Super-Favorit entfernt: Diplomarbeit {index + 1}";
+        }
+    }
+
+
+    private string GetCssClass(int index)
+    {
+        return Buttons[index] switch
+        {
+            BtnState.Favorit => "button favorit",
+            BtnState.Super => "button topfavorit",
+            _ => "button"
+        };
+    }
+
+}
+

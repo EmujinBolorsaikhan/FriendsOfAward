@@ -1,0 +1,323 @@
+﻿/*body {
+}*/
+
+/* Container für die Buttons im 4x5 Format */
+/*.container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);*/ /* 4 Spalten */
+    /*grid-gap: 10px;*/ /* Abstand zwischen den Buttons */
+    /*max-width: 600px;*/ /* Maximalbreite der Container */
+    /*height: 400px;
+    margin: 0 auto;*/ /* Zentriert den Container */
+/*}*/
+
+/* Styling für die Buttons */
+/*.DA_Button {
+    background-color: lightgray;*/ /* Grüne Hintergrundfarbe */
+    /*color: white;*/ /* Weißer Text */
+    /*font-size: 18px;*/ /* Größere Schrift */
+    /*padding: 15px 30px;*/ /* Größere Padding für mehr Höhe und Breite */
+    /*border-radius: 12px;*/ /* Abgerundete Ecken */
+    /*border: none;*/ /* Entfernt den Standardrahmen */
+    /*transition: background-color 0.3s ease, transform 0.3s ease;*/ /* Sanfte Übergänge */
+    /*cursor: pointer;*/ /* Zeigt den Zeiger an, wenn über den Button gefahren wird */
+    /*box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);*/ /* Leichter Schatten */
+/*}*/
+
+    /* Hover-Effekt für die Buttons */
+    /*.DA_Button:hover {
+        background-color: gray;*/ /* Etwas dunkleres Grün beim Hover */
+        /*transform: translateY(-2px);*/ /* Hebt den Button leicht an */
+    /*}*/
+
+    /* Klick-Effekt für die Buttons */
+    /*.DA_Button:active {
+        transform: translateY(2px);*/ /* Button "drückt" sich leicht nach unten */
+    /*}*/
+
+/*body {
+    margin: 0;
+    font-family: sans-serif;
+    background-color: #f0f0f0;
+    color: #333;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.dark-mode {
+    background-color: #222;
+    color: #eee;
+}
+
+h1 {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.legend-box {
+    text-align: center;
+    margin: 0.5rem 1rem 1rem;
+}
+
+    .legend-box p {
+        margin: 0.4rem 0;
+        font-weight: bold;
+    }
+
+    .legend-box .small-note {
+        font-size: 0.9rem;
+        font-weight: normal;
+        margin-top: 0.6rem;
+    }
+
+#buttonGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding: 1rem;
+    max-width: 600px;
+    margin: auto;
+}
+
+.button {
+    padding: 1rem;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #e0e0e0;
+    transition: transform 0.2s, background 0.3s;
+}
+
+    .button:active {
+        transform: scale(0.95);
+    }
+
+.favorit {
+    background-color: #4CAF50;
+    color: white;
+    position: relative;
+}
+
+    .favorit::after {
+        content: "⭐";
+        position: absolute;
+        top: 5px;
+        right: 10px;
+    }
+
+.topfavorit {
+    background-color: orange;
+    color: white;
+    position: relative;
+}
+
+    .topfavorit::after {
+        content: "⭐⭐";
+        position: absolute;
+        top: 5px;
+        right: 10px;
+    }
+
+#info {
+    text-align: center;
+    margin: 1rem;
+    font-weight: bold;
+}
+
+#message {
+    text-align: center;
+    font-weight: bold;
+}
+
+#submitBtn {
+    display: block;
+    margin: 1rem auto;
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    transition: background 0.3s;
+}
+
+    #submitBtn:hover:not(:disabled) {
+        background-color: #1976D2;
+    }
+
+    #submitBtn:disabled {
+        background-color: #90CAF9;
+        cursor: not-allowed;
+    }
+
+#adminToggle {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+#adminPanel {
+    display: none;
+    background: white;
+    padding: 1rem;
+    margin: 1rem;
+    border: 1px solid #ccc;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 0.5rem;
+    text-align: center;
+}*/
+
+body {
+    margin: 0;
+    font-family: sans-serif;
+    background-color: #f0f0f0;
+    color: #333;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.dark-mode {
+    background-color: #222;
+    color: #eee;
+}
+
+h1 {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.legend-box {
+    text-align: center;
+    margin: 0.5rem 1rem 1rem;
+}
+
+    .legend-box p {
+        margin: 0.4rem 0;
+        font-weight: bold;
+    }
+
+    .legend-box .small-note {
+        font-size: 0.9rem;
+        font-weight: normal;
+        margin-top: 0.6rem;
+    }
+
+#buttonGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding: 1rem;
+    max-width: 600px;
+    margin: auto;
+}
+
+.button {
+    padding: 1rem;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #e0e0e0;
+    transition: transform 0.2s, background 0.3s;
+}
+
+    .button:active {
+        transform: scale(0.95);
+    }
+
+.favorit {
+    background-color: #4CAF50;
+    color: white;
+    position: relative;
+}
+
+    .favorit::after {
+        content: "⭐";
+        position: absolute;
+        top: 5px;
+        right: 10px;
+    }
+
+.topfavorit {
+    background-color: orange;
+    color: white;
+    position: relative;
+}
+
+    .topfavorit::after {
+        content: "⭐⭐";
+        position: absolute;
+        top: 5px;
+        right: 10px;
+    }
+
+#info {
+    text-align: center;
+    margin: 1rem;
+    font-weight: bold;
+}
+
+#message {
+    text-align: center;
+    font-weight: bold;
+}
+
+#submitBtn {
+    display: block;
+    margin: 1rem auto;
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    transition: background 0.3s;
+}
+
+    #submitBtn:hover:not(:disabled) {
+        background-color: #1976D2;
+    }
+
+    #submitBtn:disabled {
+        background-color: #90CAF9;
+        cursor: not-allowed;
+    }
+
+#adminToggle {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+#adminPanel {
+    display: none;
+    background: white;
+    padding: 1rem;
+    margin: 1rem;
+    border: 1px solid #ccc;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 0.5rem;
+    text-align: center;
+}
+
