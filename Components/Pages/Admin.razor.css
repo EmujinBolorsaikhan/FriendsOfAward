@@ -1,0 +1,63 @@
+﻿/* SAME BACKGROUND AS LOGIN PAGE */
+.admin-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient( 135deg, #0a1733 0%, #0f2c66 50%, #234d9b 100% );
+    font-family: "Segoe UI", sans-serif;
+}
+
+/* SAME WHITE BOX AS LOGIN */
+.admin-box {
+    background: #ffffff;
+    padding: 40px 50px;
+    width: 420px;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    text-align: center;
+}
+
+    /* SAME TITLE STYLE */
+    .admin-box h2 {
+        margin-bottom: 25px;
+        font-size: 28px;
+        color: #222;
+    }
+
+/* USE EXACT SAME LOGIN BUTTON STYLE */
+.login-button {
+    width: 100%;
+    padding: 12px;
+    background: #12437d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.25s;
+    margin-bottom: 14px; /* spacing between buttons */
+}
+
+    .login-button:hover {
+        background: #205a9e;
+    }
+
+/* QR PREVIEW BOX (same style language as login) */
+.qr-preview {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f6f6f6;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    min-height: 220px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+    .qr-preview img {
+        max-width: 100%;
+        height: auto;
+    }

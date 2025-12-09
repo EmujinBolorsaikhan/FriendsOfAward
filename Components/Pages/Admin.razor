@@ -1,0 +1,60 @@
+﻿@page "/admin"
+@rendermode InteractiveServer
+
+<div class="admin-container">
+    <div class="admin-box">
+
+        <h2>Adminansicht</h2>
+
+        <button class="login-button" @onclick="GenerateQrCode">
+            QR-Code erstellen
+        </button>
+
+        <button class="login-button" @onclick="AddAdmin">
+            Admin hinzufügen
+        </button>
+
+        <button class="login-button" @onclick="DownloadResults">
+            Ergebnisliste herunterladen
+        </button>
+
+        <button class="login-button" @onclick="UploadDiplomas">
+            Diplomarbeitenliste hochladen
+        </button>
+
+        <div class="qr-preview">
+            @if (!string.IsNullOrEmpty(QrImageBase64))
+            {
+                <img src="@($"data:image/png;base64,{QrImageBase64}")" alt="QR Code" />
+            }
+            else
+            {
+                <p>Noch kein QR-Code erstellt.</p>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private string QrImageBase64 { get; set; }
+
+    private void GenerateQrCode()
+    {
+        QrImageBase64 = ""; // TODO
+    }
+
+    private void AddAdmin()
+    {
+        // TODO
+    }
+
+    private void DownloadResults()
+    {
+        // TODO
+    }
+
+    private void UploadDiplomas()
+    {
+        // TODO
+    }
+}
