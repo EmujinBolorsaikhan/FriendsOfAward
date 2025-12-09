@@ -1,0 +1,113 @@
+﻿@page "/login"
+@rendermode InteractiveServer
+
+@* <div class="login-container">
+    <div class="login-box">
+        <img src="/images/Logo.png" alt="Logo" class="login-logo" />
+
+        <h2>Admin Login</h2>
+
+        <div class="input-group">
+            <input id="username" type="text" placeholder="Username" @bind="Username" />
+        </div>
+
+        <div class="input-group">
+            <input id="password" type="password" placeholder="Password" @bind="Password" />
+        </div>
+
+        <button class="login-button" @onclick="Logins">Login</button>
+    </div>
+</div>
+
+@code {
+    private string Username { get; set; }
+    private string Password { get; set; }
+
+    private void Logins()
+    {
+        // TODO: implement login
+
+    }
+} *@
+
+<div class="login-container">
+    <div class="login-box">
+        <img src="/images/Logo.png" alt="Logo" class="login-logo" />
+
+        <h2>Admin Login</h2>
+
+        <!-- USERNAME ERROR -->
+        @if (!string.IsNullOrEmpty(EmailError))
+        {
+            <div class="error-message">@EmailError</div>
+        }
+
+        <div class="input-group">
+            <input id="email"
+                   type="text"
+                   placeholder="Email"
+                   @bind="Email" />
+        </div>
+
+        <!-- PASSWORD ERROR -->
+        @if (!string.IsNullOrEmpty(PasswordError))
+        {
+            <div class="error-message">@PasswordError</div>
+        }
+
+        <div class="input-group">
+            <input id="password"
+                   type="password"
+                   placeholder="Passwort"
+                   @bind="Password" />
+        </div>
+
+        <button class="login-button" @onclick="Logins">Login</button>
+    </div>
+</div>
+
+@code {
+    private string Email { get; set; }
+    private string Password { get; set; }
+
+    private string EmailError { get; set; }
+    private string PasswordError { get; set; }
+
+    // Hardcoded password for example purposes
+    private const string CorrectPassword = "admin123";
+
+    private void Logins()
+    {
+        EmailError = "";
+        PasswordError = "";
+
+        bool hasError = false;
+
+        if (string.IsNullOrWhiteSpace(Email))
+        {
+            EmailError = "Bitte Email eingeben.";
+            hasError = true;
+        }
+        else if (!Email.Contains('@'))
+        {
+            EmailError = "Bitte geben Sie eine gültige Email ein.";
+            hasError = true;
+        }
+
+        if (string.IsNullOrWhiteSpace(Password))
+        {
+            PasswordError = "Bitte geben Sie Ihr Passwort ein.";
+            hasError = true;
+        }
+        else if (Password != CorrectPassword)
+        {
+            PasswordError = "Falsches Passwort.";
+            hasError = true;
+        }
+
+        if (!hasError)
+        {
+            // TODO: redirect or open admin area
+        }
+    }
+}
