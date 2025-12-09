@@ -1,35 +1,6 @@
 ﻿@page "/login"
 @rendermode InteractiveServer
 
-@* <div class="login-container">
-    <div class="login-box">
-        <img src="/images/Logo.png" alt="Logo" class="login-logo" />
-
-        <h2>Admin Login</h2>
-
-        <div class="input-group">
-            <input id="username" type="text" placeholder="Username" @bind="Username" />
-        </div>
-
-        <div class="input-group">
-            <input id="password" type="password" placeholder="Password" @bind="Password" />
-        </div>
-
-        <button class="login-button" @onclick="Logins">Login</button>
-    </div>
-</div>
-
-@code {
-    private string Username { get; set; }
-    private string Password { get; set; }
-
-    private void Logins()
-    {
-        // TODO: implement login
-
-    }
-} *@
-
 <div class="login-container">
     <div class="login-box">
         <img src="/images/Logo.png" alt="Logo" class="login-logo" />
