@@ -1,4 +1,4 @@
-﻿@page "/"
+﻿@page "/login/{Token}"
 @rendermode InteractiveServer
 
 <h1>Diplomarbeiten</h1>
@@ -32,6 +32,7 @@
 
 
 @code {
+    private Guid Token = Guid.NewGuid();
 
     private enum BtnState { Normal, Favorit, Super }
 
