@@ -1,5 +1,6 @@
 ﻿@page "/"
 @rendermode InteractiveServer
+@inject NavigationManager MyNavMgr
 
 
 <div class="login-container">
@@ -80,7 +81,7 @@
 
         if (!hasError)
         {
-            // TODO: redirect or open admin area
+            MyNavMgr.NavigateTo("/admin");
         }
     }
 }
