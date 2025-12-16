@@ -25,7 +25,7 @@
         <div class="qr-preview">
             @if (!string.IsNullOrEmpty(QrImageBase64))
             {
-                <img src="@($"data:image/png;base64,{QrImageBase64}")" alt="QR Code" />
+                <img src="@(QrImageBase64)" alt="QR Code" />
             }
             else
             {
@@ -40,8 +40,26 @@
 
     private void GenerateQrCode()
     {
-        QrImageBase64 = Guid.NewGuid().ToString(); 
+        // 1. Unique Token        
+        var token = Guid.NewGuid().ToString();
         
+
+        // 3. Payload (Beispiel)        
+        var payload = $"http://172.17.10.60:5432/mibombo";
+
+
+        // 4. QR-Code erzeugen        
+        using var qrGenerator = new QRCoder.QRCodeGenerator();
+
+        using var qrData = qrGenerator.CreateQrCode(payload, QRCoder.QRCodeGenerator.ECCLevel.Q);
+
+        using var qrCode = new QRCoder.PngByteQRCode(qrData);
+
+
+        var qrBytes = qrCode.GetGraphic(20);
+
+        QrImageBase64 = $"data:image/png;base64,{Convert.ToBase64String(qrBytes)}";
+
         // TODO
 
     }
