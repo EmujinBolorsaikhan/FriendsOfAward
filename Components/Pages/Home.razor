@@ -1,4 +1,4 @@
-﻿@page "/"
+﻿@page "/home"
 @rendermode InteractiveServer
 
 <h1>Diplomarbeiten</h1>
@@ -53,13 +53,12 @@
 
     private void OnButtonClick(int index)
     {
-        Console.WriteLine("KLICK!");
         var state = Buttons[index];
 
         // 1. Normal → Favorit (max 6)
         if (state == BtnState.Normal)
         {
-            if (FavoritCount >= 6 || SuperIndex != -1)
+            if (FavoritCount >= 6 || SuperIndex != -1 && FavoritCount >= 5)
             {
                 Message = "Maximal 6 Favoriten erlaubt.";
                 return;

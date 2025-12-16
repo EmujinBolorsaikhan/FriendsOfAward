@@ -1,60 +1,43 @@
-﻿@page "/login"
-@using Microsoft.AspNetCore.Components.Authorization 
-@inject NavigationManager MyNavMgr
-@inject MyCustomAuthStateProvider MyAuthStateProvider
+﻿@page "/"
 @rendermode InteractiveServer
 
-<AuthorizeView> 
-    <Authorized> 
-        @{ 
-            // ja, man kann hier direkt C#-Code einfügen
-            string name = "unknown";
-            if (context.User.Identity != null)
-                name = $"{context.User.Identity.Name}";
-        } 
-        <h3>Willkommen, @name</h3>
-        <button @onclick="Btn_Logout">Logout</button>
-    </Authorized> 
 
-    <NotAuthorized> 
-        <div class="login-container">
-            <div class="login-box">
-                <img src="/images/Logo.png" alt="Logo" class="login-logo" />
+<div class="login-container">
+    <div class="login-box">
+        <img src="/images/Logo.png" alt="Logo" class="login-logo" />
 
-                <h2>Admin Login</h2>
+        <h2>Admin Login</h2>
 
-                <!-- EMAIL ERROR -->
-                @if (!string.IsNullOrEmpty(EmailError))
-                {
-                    <div class="error-message">@EmailError</div>
-                }
+        <!-- EMAIL ERROR -->
+        @if (!string.IsNullOrEmpty(EmailError))
+        {
+            <div class="error-message">@EmailError</div>
+        }
 
-                <div class="input-group">
-                    <input id="email"
-                           type="text"
-                           placeholder="Email"
-                           @bind="Email" />
-                </div>
-
-                <!-- PASSWORD ERROR -->
-                @if (!string.IsNullOrEmpty(PasswordError))
-                {
-                    <div class="error-message">@PasswordError</div>
-                }
-
-                <div class="input-group">
-                    <input id="password"
-                           type="password"
-                           placeholder="Passwort"
-                           @bind="Password" />
-                </div>
-
-                <button class="login-button" @onclick="Logins">Login</button>
-            </div>
+        <div class="input-group">
+            <input id="email"
+                    type="text"
+                    placeholder="Email"
+                    @bind="Email" />
         </div>
-    </NotAuthorized> 
-</AuthorizeView>
 
+        <!-- PASSWORD ERROR -->
+        @if (!string.IsNullOrEmpty(PasswordError))
+        {
+            <div class="error-message">@PasswordError</div>
+        }
+
+        <div class="input-group">
+            <input id="password"
+                    type="password"
+                    placeholder="Passwort"
+                    @bind="Password" />
+        </div>
+
+        <button class="login-button" @onclick="Logins">Login</button>
+    </div>
+</div>
+   
 
 @code {
     private string Email { get; set; }
@@ -99,17 +82,5 @@
         {
             // TODO: redirect or open admin area
         }
-    }
-
-    void Btn_Login()
-    {
-        MyNavMgr.NavigateTo("/Login");
-    }
-    void Btn_Logout()
-    {
-        if (MyAuthStateProvider != null)
-            MyAuthStateProvider.Logout();
-        else
-            Console.WriteLine("Fatal Error: AuthProvider == null!!");
     }
 }
