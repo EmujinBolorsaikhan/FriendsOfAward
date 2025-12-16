@@ -1,4 +1,60 @@
 ﻿@page "/home"
+
+@page "/"
+@rendermode InteractiveServer
+
+<h1>Diplomarbeiten</h1>
+
+<div class="legend-box">
+    <p>Wählen Sie eine Diplomarbeit aus:</p>
+    <p class="small-note">Klicken Sie auf die Schaltflächen, um eine Auswahl zu treffen.</p>
+</div>
+
+<div id="buttonGrid">
+    @for (int i = 0; i < Buttons.Count; i++)
+    {
+        int cur = i;
+        <button class="button @GetCssClass(i)" @onclick="() => OnButtonClick(cur)">
+            Diplomarbeit @(i + 1)
+        </button>
+    }
+</div>
+
+<div id="info">Weitere Informationen zur Auswahl der Diplomarbeit</div>
+
+<div id="message">@Message</div>
+
+<button id="submitBtn" disabled="@(!CanSubmit)">Absenden</button>
+
+<div id="adminToggle" @onclick="ToggleAdmin">⚙️</div>
+
+<div id="adminPanel" style="display:@(showAdmin ? "block" : "none")">
+    <p>Admin-Panel</p>
+</div>
+
+
+@code {
+    private Guid Token = Guid.NewGuid();
+
+    private enum BtnState { Normal, Favorit, Super }
+
+    private List<BtnState> Buttons = Enumerable.Repeat(BtnState.Normal, 20).ToList();
+
+    private string Message = "";
+    private bool showAdmin = false;
+
+    private bool CanSubmit => Buttons.Any(b => b == BtnState.Super);
+
+    private int FavoritCount => Buttons.Count(b => b == BtnState.Favorit);
+    private int SuperIndex => Buttons.FindIndex(b => b == BtnState.Super);
+
+    private void ToggleAdmin()
+    {
+        showAdmin = !showAdmin;
+    }
+
+    private void OnButtonClick(int index)
+    {
 @rendermode InteractiveServer
 
 <h1>Diplomarbeiten</h1>
