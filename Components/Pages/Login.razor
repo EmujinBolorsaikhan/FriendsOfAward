@@ -1,6 +1,7 @@
 ﻿@page "/"
 @rendermode InteractiveServer
-
+@inject MyCustomAuthStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
 
 <div class="login-container">
     <div class="login-box">
@@ -80,7 +81,9 @@
 
         if (!hasError)
         {
-            // TODO: redirect or open admin area
+            // Authenticate user and redirect to admin area
+            AuthStateProvider.Login(Email);
+            NavigationManager.NavigateTo("/admin");
         }
     }
 }

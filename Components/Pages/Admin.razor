@@ -1,39 +1,62 @@
 ﻿@page "/admin"
 @rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+@inject MyCustomAuthStateProvider CustomAuthStateProvider
+@inject NavigationManager NavigationManager
 
-<div class="admin-container">
-    <div class="admin-box">
+<AuthorizeView>
+    <Authorized>
+        <div class="admin-container">
+            <div class="admin-box">
 
-        <h2>Adminansicht</h2>
+                <h2>Adminansicht</h2>
 
-        <button class="login-button" @onclick="GenerateQrCode">
-            QR-Code erstellen
-        </button>
+                <button class="logout-button" @onclick="Logout">
+                    Logout
+                </button>
 
-        <button class="login-button" @onclick="AddAdmin">
-            Admin hinzufügen
-        </button>
+                <button class="login-button" @onclick="GenerateQrCode">
+                    QR-Code erstellen
+                </button>
 
-        <button class="login-button" @onclick="DownloadResults">
-            Ergebnisliste herunterladen
-        </button>
+                <button class="login-button" @onclick="AddAdmin">
+                    Admin hinzufügen
+                </button>
 
-        <button class="login-button" @onclick="UploadDiplomas">
-            Diplomarbeitenliste hochladen
-        </button>
+                <button class="login-button" @onclick="DownloadResults">
+                    Ergebnisliste herunterladen
+                </button>
 
-        <div class="qr-preview">
-            @if (!string.IsNullOrEmpty(QrImageBase64))
-            {
-                <img src="@(QrImageBase64)" alt="QR Code" />
-            }
-            else
-            {
-                <p>Noch kein QR-Code erstellt.</p>
-            }
+                <button class="login-button" @onclick="UploadDiplomas">
+                    Diplomarbeitenliste hochladen
+                </button>
+
+                <div class="qr-preview">
+                    @if (!string.IsNullOrEmpty(QrImageBase64))
+                    {
+                        <img src="@(QrImageBase64)" alt="QR Code" />
+                    }
+                    else
+                    {
+                        <p>Noch kein QR-Code erstellt.</p>
+                    }
+                </div>
+            </div>
         </div>
-    </div>
-</div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="unauthorized-container">
+            <div class="unauthorized-box">
+                <h2>Zugriff verweigert</h2>
+                <p>Sie haben keine Berechtigung für diese Seite.</p>
+                <button class="login-button" @onclick="RedirectToLogin">
+                    Zur Anmeldung
+                </button>
+            </div>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     private string QrImageBase64 { get; set; }
@@ -77,5 +100,16 @@
     private void UploadDiplomas()
     {
         // TODO
+    }
+
+    private void Logout()
+    {
+        CustomAuthStateProvider.Logout();
+        NavigationManager.NavigateTo("/");
+    }
+
+    private void RedirectToLogin()
+    {
+        NavigationManager.NavigateTo("/");
     }
 }

@@ -61,3 +61,50 @@
         max-width: 100%;
         height: auto;
     }
+
+.logout-button {
+    width: 100%;
+    padding: 10px;
+    background: #d03333;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.25s;
+    margin-bottom: 15px;
+}
+
+.logout-button:hover {
+    background: #a82828;
+}
+
+.unauthorized-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #0a1733 0%, #0f2c66 50%, #234d9b 100%);
+}
+
+.unauthorized-box {
+    background: #ffffff;
+    padding: 40px 50px;
+    width: 380px;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    text-align: center;
+}
+
+.unauthorized-box h2 {
+    margin-bottom: 15px;
+    font-size: 24px;
+    color: #d03333;
+}
+
+.unauthorized-box p {
+    margin-bottom: 20px;
+    font-size: 15px;
+    color: #666;
+}
