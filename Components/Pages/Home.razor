@@ -22,7 +22,7 @@
 
 <div id="message">@Message</div>
 
-<button id="submitBtn" @onclick="OnSubmitClick" disabled="@(!CanSubmit)">Absenden</button>
+<button id="submitBtn" @onclick="OnSubmitClick" disabled="@(FavoritCount == 0 && SuperIndex == -1)">Absenden</button>
 
 <div id="adminToggle" @onclick="ToggleAdmin">⚙️</div>
 
@@ -32,8 +32,8 @@
 
 @if (showConfirmDialog)
 {
-    <div class="modal-overlay">
-        <div class="confirmation-dialog">
+    <div class="modal-overlay" @onclick="() => OnConfirmCancel()">
+        <div class="confirmation-dialog" @onclick:stopPropagation="true">
             <p>Sie haben nicht alle Ihre Stimmen abgegeben. Möchten Sie ihre Auswahl dennoch absenden?</p>
             <div class="dialog-buttons">
                 <button class="btn-ja" @onclick="OnConfirmYes">Ja</button>
@@ -54,8 +54,6 @@
     private string Message = "";
     private bool showAdmin = false;
     private bool showConfirmDialog = false;
-
-    private bool CanSubmit => Buttons.Any(b => b == BtnState.Super);
 
     private int FavoritCount => Buttons.Count(b => b == BtnState.Favorit);
     private int SuperIndex => Buttons.FindIndex(b => b == BtnState.Super);
