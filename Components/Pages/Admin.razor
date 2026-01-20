@@ -68,8 +68,8 @@
         
 
         // 3. Payload (Beispiel)        
-        var payload = $"http://172.17.10.60:5432/mibombo";
-
+        var payload = NavigationManager.BaseUri;
+        
 
         // 4. QR-Code erzeugen        
         using var qrGenerator = new QRCoder.QRCodeGenerator();
