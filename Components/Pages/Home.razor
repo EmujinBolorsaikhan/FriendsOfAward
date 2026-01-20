@@ -22,7 +22,7 @@
 
 <div id="message">@Message</div>
 
-<button id="submitBtn" disabled="@(!CanSubmit)">Absenden</button>
+<button id="submitBtn" @onclick="OnSubmitClick" disabled="@(!CanSubmit)">Absenden</button>
 
 <div id="adminToggle" @onclick="ToggleAdmin">⚙️</div>
 
@@ -30,6 +30,19 @@
     <p>Admin-Panel</p>
 </div>
 
+@if (showConfirmDialog)
+{
+    <div class="modal-overlay">
+        <div class="confirmation-dialog">
+            <p>Sie haben nicht alle Ihre Stimmen abgegeben. Möchten Sie ihre Auswahl dennoch absenden?</p>
+            <div class="dialog-buttons">
+                <button class="btn-ja" @onclick="OnConfirmYes">Ja</button>
+                <button class="btn-nein" @onclick="OnConfirmNo">Nein</button>
+                <button class="btn-abbrechen" @onclick="OnConfirmCancel">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+}
 
 @code {
     private Guid Token = Guid.NewGuid();
@@ -40,6 +53,7 @@
 
     private string Message = "";
     private bool showAdmin = false;
+    private bool showConfirmDialog = false;
 
     private bool CanSubmit => Buttons.Any(b => b == BtnState.Super);
 
@@ -110,4 +124,40 @@
         return "";
     }
 
+    private void OnSubmitClick()
+    {
+        // Check if selection is complete (5 Favorites + 1 Super)
+        if (FavoritCount == 5 && SuperIndex != -1)
+        {
+            // Selection is complete, submit directly
+            SubmitVotes();
+        }
+        else
+        {
+            // Selection is incomplete, show confirmation dialog
+            showConfirmDialog = true;
+        }
+    }
+
+    private void OnConfirmYes()
+    {
+        showConfirmDialog = false;
+        SubmitVotes();
+    }
+
+    private void OnConfirmNo()
+    {
+        showConfirmDialog = false;
+    }
+
+    private void OnConfirmCancel()
+    {
+        showConfirmDialog = false;
+    }
+
+    private void SubmitVotes()
+    {
+        // TODO: Implement vote submission logic
+        Message = "Stimmen abgesendet!";
+    }
 }
