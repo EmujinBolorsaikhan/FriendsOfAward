@@ -9,36 +9,38 @@
 
         <h2>Admin Login</h2>
 
-        <!-- EMAIL ERROR -->
-        @if (!string.IsNullOrEmpty(EmailError))
-        {
-            <div class="error-message">@EmailError</div>
-        }
+        <form @onsubmit="Logins" @onsubmit:preventDefault>
+            <!-- EMAIL ERROR -->
+            @if (!string.IsNullOrEmpty(EmailError))
+            {
+                <div class="error-message">@EmailError</div>
+            }
 
-        <div class="input-group">
-            <input id="email"
-                    type="text"
-                    placeholder="Email"
-                    @bind="Email" />
-        </div>
+            <div class="input-group">
+                <input id="email"
+                        type="text"
+                        placeholder="Email"
+                        @bind="Email" />
+            </div>
 
-        <!-- PASSWORD ERROR -->
-        @if (!string.IsNullOrEmpty(PasswordError))
-        {
-            <div class="error-message">@PasswordError</div>
-        }
+            <!-- PASSWORD ERROR -->
+            @if (!string.IsNullOrEmpty(PasswordError))
+            {
+                <div class="error-message">@PasswordError</div>
+            }
 
-        <div class="input-group">
-            <input id="password"
-                    type="password"
-                    placeholder="Passwort"
-                    @bind="Password" />
-        </div>
+            <div class="input-group">
+                <input id="password"
+                        type="password"
+                        placeholder="Passwort"
+                        @bind="Password" />
+            </div>
 
-        <button class="login-button" @onclick="Logins">Login</button>
+            <button type="submit" class="login-button">Login</button>
+        </form>
     </div>
 </div>
-   
+
 
 @code {
     private string Email { get; set; }
@@ -50,7 +52,7 @@
     // Hardcoded password for example purposes
     private const string CorrectPassword = "admin123";
 
-    private void Logins()
+    private Task Logins()
     {
         EmailError = "";
         PasswordError = "";
@@ -85,5 +87,7 @@
             AuthStateProvider.Login(Email);
             NavigationManager.NavigateTo("/admin");
         }
+
+        return Task.CompletedTask;
     }
 }
