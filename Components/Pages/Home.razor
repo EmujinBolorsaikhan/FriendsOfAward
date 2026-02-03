@@ -1,54 +1,95 @@
-﻿@page "/home"
+﻿@page "/home/{Token}"
 @rendermode InteractiveServer
 
-<h1>Diplomarbeiten</h1>
+@inject IQrCodeService QrCodeService
+@inject NavigationManager Nav
 
-<div class="legend-box">
-    <p>Wählen Sie eine Diplomarbeit aus:</p>
-    <p class="small-note">Klicken Sie auf die Schaltflächen, um eine Auswahl zu treffen.</p>
-</div>
-
-<div id="buttonGrid">
-    @for (int i = 0; i < Buttons.Count; i++)
-    {
-        int cur = i;
-        <button class="button @GetCssClass(i)" @onclick="() => OnButtonClick(cur)">
-            Diplomarbeit @(i + 1)
-        </button>
-    }
-</div>
-
-<div id="info">Weitere Informationen zur Auswahl der Diplomarbeit</div>
-
-<div id="message">@Message</div>
-
-<button id="submitBtn" @onclick="OnSubmitClick" disabled="@(FavoritCount == 0 && SuperIndex == -1)">Absenden</button>
-
-<div id="adminToggle" @onclick="ToggleAdmin">⚙️</div>
-
-<div id="adminPanel" style="display:@(showAdmin ? "block" : "none")">
-    <p>Admin-Panel</p>
-</div>
-
-@if (showConfirmDialog)
+@if (_loading)
 {
-    <div class="modal-overlay" @onclick="() => OnConfirmCancel()">
-        <div class="confirmation-dialog" @onclick:stopPropagation="true">
-            <p>Sie haben nicht alle Ihre Stimmen abgegeben. Möchten Sie ihre Auswahl dennoch absenden?</p>
-            <div class="dialog-buttons">
-                <button class="btn-ja" @onclick="OnConfirmYes">Ja</button>
-                <button class="btn-nein" @onclick="OnConfirmNo">Nein</button>
-                <button class="btn-abbrechen" @onclick="OnConfirmCancel">Abbrechen</button>
+    <p>Lade...</p>
+}
+else if (!_isValidToken)
+{
+    <h2>Ungültiger oder bereits verwendeter QR-Code</h2>
+}
+else
+{
+    <h1>Diplomarbeiten</h1>
+
+    <div class="legend-box">
+        <p>Wählen Sie eine Diplomarbeit aus:</p>
+        <p class="small-note">Klicken Sie auf die Schaltflächen, um eine Auswahl zu treffen.</p>
+    </div>
+
+    <div id="buttonGrid">
+        @for (int i = 0; i < Buttons.Count; i++)
+        {
+            int cur = i;
+            <button class="button @GetCssClass(i)" @onclick="() => OnButtonClick(cur)">
+                Diplomarbeit @(i + 1)
+            </button>
+        }
+    </div>
+
+    <div id="info">Weitere Informationen zur Auswahl der Diplomarbeit</div>
+    <div id="message">@Message</div>
+
+    <button id="submitBtn"
+            @onclick="OnSubmitClick"
+            disabled="@(FavoritCount == 0 && SuperIndex == -1)">
+        Absenden
+    </button>
+
+    <div id="adminToggle" @onclick="ToggleAdmin">⚙️</div>
+
+    <div id="adminPanel" style="display:@(showAdmin ? "block" : "none")">
+        <p>Admin-Panel</p>
+    </div>
+
+    @if (showConfirmDialog)
+    {
+        <div class="modal-overlay" @onclick="() => OnConfirmCancel()">
+            <div class="confirmation-dialog" @onclick:stopPropagation="true">
+                <p>Sie haben nicht alle Ihre Stimmen abgegeben. Möchten Sie ihre Auswahl dennoch absenden?</p>
+                <div class="dialog-buttons">
+                    <button class="btn-ja" @onclick="OnConfirmYes">Ja</button>
+                    <button class="btn-nein" @onclick="OnConfirmNo">Nein</button>
+                    <button class="btn-abbrechen" @onclick="OnConfirmCancel">Abbrechen</button>
+                </div>
             </div>
         </div>
-    </div>
+    }
 }
 
 @code {
-    private Guid Token = Guid.NewGuid();
+    // 🔑 Route parameter
+    [Parameter]
+    public string Token { get; set; } = string.Empty;
+
+    private bool _loading = true;
+    private bool _isValidToken = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+
+        // Validate token against DB
+        _isValidToken = await QrCodeService.TokenExistsAsync(Token);
+
+        if (!_isValidToken)
+        {
+            // Optional redirect instead of message:
+            // Nav.NavigateTo("/not-found", true);
+        }
+
+        _loading = false;
+    }
+
+    // ===========================
+    // EXISTING LOGIC (unchanged)
+    // ===========================
 
     private enum BtnState { Normal, Favorit, Super }
-
     private List<BtnState> Buttons = Enumerable.Repeat(BtnState.Normal, 20).ToList();
 
     private string Message = "";
@@ -58,25 +99,21 @@
     private int FavoritCount => Buttons.Count(b => b == BtnState.Favorit);
     private int SuperIndex => Buttons.FindIndex(b => b == BtnState.Super);
 
-    private void ToggleAdmin()
-    {
-        showAdmin = !showAdmin;
-    }
+    private void ToggleAdmin() => showAdmin = !showAdmin;
 
     private void OnButtonClick(int index)
     {
         var state = Buttons[index];
 
-        // 1. Normal → Favorit (max 6)
         if (state == BtnState.Normal)
         {
-            if (FavoritCount >= 6 || SuperIndex != -1 && FavoritCount >= 5)
+            if (FavoritCount >= 6 || (SuperIndex != -1 && FavoritCount >= 5))
             {
                 Message = "Maximal 6 Favoriten erlaubt.";
                 return;
             }
-            // 6. Favorit direkt Super-Favorit
-            if(FavoritCount == 5 && SuperIndex == -1)
+
+            if (FavoritCount == 5 && SuperIndex == -1)
             {
                 Buttons[index] = BtnState.Super;
                 Message = $"Super-Favorit gewählt: Diplomarbeit {index + 1}";
@@ -88,7 +125,6 @@
             return;
         }
 
-        // 2. Favorit → Super-Favorit (nur 1 erlaubt)
         if (state == BtnState.Favorit)
         {
             if (SuperIndex != -1)
@@ -101,7 +137,6 @@
             return;
         }
 
-        // 3. Super → Normal
         if (state == BtnState.Super)
         {
             Buttons[index] = BtnState.Normal;
@@ -109,32 +144,20 @@
         }
     }
 
-    private string GetCssClass(int index)
-    {
-        if (Buttons[index] == BtnState.Favorit)
+    private string GetCssClass(int index) =>
+        Buttons[index] switch
         {
-            return "favorite";
-        }
-        else if (Buttons[index] == BtnState.Super)
-        {
-            return "topfavorite";
-        }
-        return "";
-    }
+            BtnState.Favorit => "favorite",
+            BtnState.Super => "topfavorite",
+            _ => ""
+        };
 
     private void OnSubmitClick()
     {
-        // Check if selection is complete (5 Favorites + 1 Super)
         if (FavoritCount == 5 && SuperIndex != -1)
-        {
-            // Selection is complete, submit directly
             SubmitVotes();
-        }
         else
-        {
-            // Selection is incomplete, show confirmation dialog
             showConfirmDialog = true;
-        }
     }
 
     private void OnConfirmYes()
@@ -143,19 +166,12 @@
         SubmitVotes();
     }
 
-    private void OnConfirmNo()
-    {
-        showConfirmDialog = false;
-    }
-
-    private void OnConfirmCancel()
-    {
-        showConfirmDialog = false;
-    }
+    private void OnConfirmNo() => showConfirmDialog = false;
+    private void OnConfirmCancel() => showConfirmDialog = false;
 
     private void SubmitVotes()
     {
-        // TODO: Implement vote submission logic
+        // TODO: save votes + mark token as used
         Message = "Stimmen abgesendet!";
     }
 }

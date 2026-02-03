@@ -4,6 +4,13 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @inject MyCustomAuthStateProvider CustomAuthStateProvider
 @inject NavigationManager NavigationManager
+@inject IQrCodeService QrCodeService
+@inject IJSRuntime JSRuntime
+@inject IConfiguration Configuration
+@inject IHttpContextAccessor HttpContextAccessor
+@using System.Net;
+@using System.Net.Sockets;
+@using System.Net.NetworkInformation;
 
 <AuthorizeView>
     <Authorized>
@@ -19,6 +26,30 @@
                 <button class="login-button" @onclick="GenerateQrCode">
                     QR-Code erstellen
                 </button>
+                @if (showQrPopup)
+                {
+                    <div class="modal-overlay" @onclick="ClosePopup">
+                        <div class="modal-content" @onclick:stopPropagation="true">
+                            <h3>QR-Codes generieren</h3>
+                            <p>Wie viele QR-Codes wollen Sie generieren?</p>
+
+                            <input type="number"
+                                   @bind="qrCodeCount"
+                                   min="1"
+                                   max="1000"
+                                   class="qr-input" />
+
+                            <div class="modal-buttons">
+                                <button @onclick="GenerateAndDownloadQrCodes" class="btn-primary">
+                                    Download
+                                </button>
+                                <button @onclick="ClosePopup" class="btn-secondary">
+                                    Abbrechen
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
 
                 <button class="login-button" @onclick="AddAdmin">
                     Admin hinzufügen
@@ -59,33 +90,300 @@
 </AuthorizeView>
 
 @code {
-    private string QrImageBase64 { get; set; }
+    // private string QrImageBase64 { get; set; }
 
-    private void GenerateQrCode()
+    // private void GenerateQrCode()
+    // {
+    //     // 1. Unique Token        
+    //     var token = Guid.NewGuid().ToString();
+        
+
+    //     // 3. Payload (Beispiel)        
+    //     var payload = NavigationManager.BaseUri;
+        
+
+    //     // 4. QR-Code erzeugen        
+    //     using var qrGenerator = new QRCoder.QRCodeGenerator();
+
+    //     using var qrData = qrGenerator.CreateQrCode(payload, QRCoder.QRCodeGenerator.ECCLevel.Q);
+
+    //     using var qrCode = new QRCoder.PngByteQRCode(qrData);
+
+
+    //     var qrBytes = qrCode.GetGraphic(20);
+
+    //     QrImageBase64 = $"data:image/png;base64,{Convert.ToBase64String(qrBytes)}";
+
+    //     // TODO
+
+    // }
+private bool showQrPopup = false;
+private int qrCodeCount = 1;
+private string QrImageBase64;
+
+
+private string GetIPAddress()
+{
+    var context = HttpContextAccessor.HttpContext;
+
+    if (context == null)
+        return "unknown";
+
+    // Handle reverse proxies
+    if (context.Request.Headers.TryGetValue("X-Forwarded-For", out var forwarded))
     {
-        // 1. Unique Token        
-        var token = Guid.NewGuid().ToString();
-        
-
-        // 3. Payload (Beispiel)        
-        var payload = NavigationManager.BaseUri;
-        
-
-        // 4. QR-Code erzeugen        
-        using var qrGenerator = new QRCoder.QRCodeGenerator();
-
-        using var qrData = qrGenerator.CreateQrCode(payload, QRCoder.QRCodeGenerator.ECCLevel.Q);
-
-        using var qrCode = new QRCoder.PngByteQRCode(qrData);
-
-
-        var qrBytes = qrCode.GetGraphic(20);
-
-        QrImageBase64 = $"data:image/png;base64,{Convert.ToBase64String(qrBytes)}";
-
-        // TODO
-
+        return forwarded.FirstOrDefault()?.Split(',').First() ?? "unknown";
     }
+
+    return context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+}
+
+
+
+private void GenerateQrCode()
+{
+    // Show the popup
+    showQrPopup = true;
+}
+
+    private async Task GenerateAndDownloadQrCodes()
+    {
+        if (qrCodeCount < 1)
+        {
+            return;
+        }
+
+        var ipAddress = GetIPAddress();
+        var port = new Uri(NavigationManager.BaseUri).Port;
+        var baseUrl = port == 80 || port == 443
+            ? $"http://{ipAddress}"
+            : $"http://{ipAddress}:{port}";
+
+        var qrCodeImages = new List<string>();
+        var tokens = new List<string>();
+
+        // Generate tokens
+        for (int i = 0; i < qrCodeCount; i++)
+        {
+            var token = Guid.NewGuid().ToString();
+            tokens.Add(token);
+        }
+
+        // Insert all tokens into database
+        var insertedTokens = await QrCodeService.InsertMultipleQrCodeTokens(tokens);
+
+        if (insertedTokens.Count == 0)
+        {
+            // Handle error - maybe show a message to user
+            await JSRuntime.InvokeVoidAsync("alert", "Fehler beim Speichern in der Datenbank!");
+            return;
+        }
+
+        // Generate QR codes only for successfully inserted tokens
+        foreach (var token in insertedTokens)
+        {
+            var payload = $"{baseUrl}/{token}";
+
+            using var qrGenerator = new QRCoder.QRCodeGenerator();
+            using var qrData = qrGenerator.CreateQrCode(payload, QRCoder.QRCodeGenerator.ECCLevel.Q);
+            using var qrCode = new QRCoder.PngByteQRCode(qrData);
+            var qrBytes = qrCode.GetGraphic(20);
+            var base64Image = Convert.ToBase64String(qrBytes);
+
+            qrCodeImages.Add(base64Image);
+        }
+
+        var htmlContent = GenerateHtmlWithQrCodes(qrCodeImages);
+        var fileName = $"QR_Codes_{DateTime.Now:yyyyMMdd_HHmmss}.html";
+        await JSRuntime.InvokeVoidAsync("downloadFile", fileName, htmlContent, "text/html");
+
+        showQrPopup = false;
+        qrCodeCount = 1;
+    }
+private string GenerateHtmlWithQrCodes(List<string> qrCodeImages)
+{
+    var html = @"
+<!DOCTYPE html>
+<html lang='de'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>QR Codes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f0f0f0;
+        }
+        
+        .container {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 600px;
+        }
+        
+        .qr-page {
+            display: none;
+        }
+        
+        .qr-page.active {
+            display: block;
+        }
+        
+        .qr-image {
+            margin: 20px 0;
+            max-width: 100%;
+        }
+        
+        .navigation {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        button:hover:not(:disabled) {
+            background: #0056b3;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .page-info {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        h1 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .print-btn {
+            background: #28a745;
+            margin-top: 20px;
+        }
+        
+        .print-btn:hover {
+            background: #218838;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .navigation, .print-btn {
+                display: none;
+            }
+            .container {
+                box-shadow: none;
+                page-break-after: always;
+            }
+            .qr-page {
+                display: block !important;
+                page-break-after: always;
+            }
+            .qr-page:last-child {
+                page-break-after: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <h1>QR Codes</h1>
+";
+
+    // Add all QR code pages
+    for (int i = 0; i < qrCodeImages.Count; i++)
+    {
+        var activeClass = i == 0 ? " active" : "";
+        html += $@"
+        <div class='qr-page{activeClass}' id='page{i}'>
+            <h2>QR Code {i + 1} von {qrCodeImages.Count}</h2>
+            <img src='data:image/png;base64,{qrCodeImages[i]}' alt='QR Code {i + 1}' class='qr-image'>
+        </div>
+";
+    }
+
+    html += $@"
+        <div class='navigation'>
+            <button id='prevBtn' onclick='changePage(-1)'>← Zurück</button>
+            <span class='page-info'><span id='currentPage'>1</span> / {qrCodeImages.Count}</span>
+            <button id='nextBtn' onclick='changePage(1)'>Weiter →</button>
+        </div>
+        <button class='print-btn' onclick='window.print()'>Alle drucken</button>
+    </div>
+
+    <script>
+        let currentPage = 0;
+        const totalPages = {qrCodeImages.Count};
+
+        function showPage(n) {{
+            const pages = document.querySelectorAll('.qr-page');
+            
+            if (n >= totalPages) {{ currentPage = totalPages - 1; }}
+            if (n < 0) {{ currentPage = 0; }}
+            
+            pages.forEach(page => page.classList.remove('active'));
+            pages[currentPage].classList.add('active');
+            
+            document.getElementById('currentPage').textContent = currentPage + 1;
+            document.getElementById('prevBtn').disabled = currentPage === 0;
+            document.getElementById('nextBtn').disabled = currentPage === totalPages - 1;
+        }}
+
+        function changePage(direction) {{
+            currentPage += direction;
+            showPage(currentPage);
+        }}
+
+        // Initialize
+        showPage(0);
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {{
+            if (e.key === 'ArrowLeft') changePage(-1);
+            if (e.key === 'ArrowRight') changePage(1);
+        }});
+    </script>
+</body>
+</html>";
+
+    return html;
+}
+
+private void ClosePopup()
+{
+    showQrPopup = false;
+    qrCodeCount = 1;
+}
 
     private void AddAdmin()
     {
@@ -113,3 +411,16 @@
         NavigationManager.NavigateTo("/");
     }
 }
+<script>
+    window.downloadFile = function(filename, content, mimeType) {
+        const blob = new Blob([content], { type: mimeType });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    };
+</script>
