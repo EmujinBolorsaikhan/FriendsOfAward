@@ -122,22 +122,6 @@ private int qrCodeCount = 1;
 private string QrImageBase64;
 
 
-private string GetIPAddress()
-{
-    var context = HttpContextAccessor.HttpContext;
-
-    if (context == null)
-        return "unknown";
-
-    // Handle reverse proxies
-    if (context.Request.Headers.TryGetValue("X-Forwarded-For", out var forwarded))
-    {
-        return forwarded.FirstOrDefault()?.Split(',').First() ?? "unknown";
-    }
-
-    return context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-}
-
 
 
 private void GenerateQrCode()
@@ -153,12 +137,8 @@ private void GenerateQrCode()
             return;
         }
 
-        var ipAddress = GetIPAddress();
-        var port = new Uri(NavigationManager.BaseUri).Port;
-        var baseUrl = port == 80 || port == 443
-            ? $"http://{ipAddress}"
-            : $"http://{ipAddress}:{port}";
-
+        var ip = NetworkHelper.GetLanIpAddress();
+        Console.WriteLine(ip);
         var qrCodeImages = new List<string>();
         var tokens = new List<string>();
 
@@ -182,7 +162,7 @@ private void GenerateQrCode()
         // Generate QR codes only for successfully inserted tokens
         foreach (var token in insertedTokens)
         {
-            var payload = $"{baseUrl}/{token}";
+            var payload = $"http://{ip}:5432/home/{token}";
 
             using var qrGenerator = new QRCoder.QRCodeGenerator();
             using var qrData = qrGenerator.CreateQrCode(payload, QRCoder.QRCodeGenerator.ECCLevel.Q);

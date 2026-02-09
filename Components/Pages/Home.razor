@@ -30,15 +30,20 @@ else
             </button>
         }
     </div>
+    <p class="vote-status">
+        Favoriten: @FavoritCount / 5 |
+        Super-Favorit: @(SuperIndex != -1 ? "gewählt" : "fehlt")
+    </p>
 
     <div id="info">Weitere Informationen zur Auswahl der Diplomarbeit</div>
     <div id="message">@Message</div>
 
     <button id="submitBtn"
             @onclick="OnSubmitClick"
-            disabled="@(FavoritCount == 0 && SuperIndex == -1)">
+            disabled="@(!IsVoteValid)">
         Absenden
     </button>
+
 
     <div id="adminToggle" @onclick="ToggleAdmin">⚙️</div>
 
@@ -46,33 +51,21 @@ else
         <p>Admin-Panel</p>
     </div>
 
-    @if (showConfirmDialog)
-    {
-        <div class="modal-overlay" @onclick="() => OnConfirmCancel()">
-            <div class="confirmation-dialog" @onclick:stopPropagation="true">
-                <p>Sie haben nicht alle Ihre Stimmen abgegeben. Möchten Sie ihre Auswahl dennoch absenden?</p>
-                <div class="dialog-buttons">
-                    <button class="btn-ja" @onclick="OnConfirmYes">Ja</button>
-                    <button class="btn-nein" @onclick="OnConfirmNo">Nein</button>
-                    <button class="btn-abbrechen" @onclick="OnConfirmCancel">Abbrechen</button>
-                </div>
-            </div>
-        </div>
-    }
 }
 
 @code {
-    // 🔑 Route parameter
+    // Route parameter
     [Parameter]
     public string Token { get; set; } = string.Empty;
 
     private bool _loading = true;
     private bool _isValidToken = false;
+    private bool IsVoteValid => FavoritCount == 5 && SuperIndex != -1;
 
     protected override async Task OnParametersSetAsync()
     {
+        Console.WriteLine($"TOKEN VALUE: {Token}");
         _loading = true;
-
         // Validate token against DB
         _isValidToken = await QrCodeService.TokenExistsAsync(Token);
 
@@ -85,9 +78,6 @@ else
         _loading = false;
     }
 
-    // ===========================
-    // EXISTING LOGIC (unchanged)
-    // ===========================
 
     private enum BtnState { Normal, Favorit, Super }
     private List<BtnState> Buttons = Enumerable.Repeat(BtnState.Normal, 20).ToList();
@@ -95,6 +85,7 @@ else
     private string Message = "";
     private bool showAdmin = false;
     private bool showConfirmDialog = false;
+    private bool _submitting = false;
 
     private int FavoritCount => Buttons.Count(b => b == BtnState.Favorit);
     private int SuperIndex => Buttons.FindIndex(b => b == BtnState.Super);
@@ -107,9 +98,16 @@ else
 
         if (state == BtnState.Normal)
         {
-            if (FavoritCount >= 6 || (SuperIndex != -1 && FavoritCount >= 5))
+            if (FavoritCount >= 5 && SuperIndex != -1)
             {
-                Message = "Maximal 6 Favoriten erlaubt.";
+                Message = "Sie haben bereits 5 Favoriten und einen Super-Favoriten gewählt.";
+                return;
+            }
+
+            if (FavoritCount >= 5 && SuperIndex == -1)
+            {
+                Buttons[index] = BtnState.Super;
+                Message = $"Super-Favorit gewählt: Diplomarbeit {index + 1}";
                 return;
             }
 
@@ -152,26 +150,53 @@ else
             _ => ""
         };
 
-    private void OnSubmitClick()
+    private async Task OnSubmitClick()
     {
-        if (FavoritCount == 5 && SuperIndex != -1)
-            SubmitVotes();
-        else
-            showConfirmDialog = true;
+        if (!IsVoteValid)
+        {
+            Message = "Bitte wählen Sie genau 5 Favoriten und 1 Super-Favorit aus.";
+            return;
+        }
+
+        await SubmitVotes();
     }
 
-    private void OnConfirmYes()
+    private async Task SubmitVotes()
     {
-        showConfirmDialog = false;
-        SubmitVotes();
+        if (_submitting)
+            return;
+
+        _submitting = true;
+
+        try
+        {
+            var favorites = Buttons
+                .Select((b, i) => new { b, i })
+                .Where(x => x.b == BtnState.Favorit)
+                .Select(x => x.i + 1)
+                .ToList();
+
+            var super = SuperIndex != -1 ? SuperIndex + 1 : (int?)null;
+
+            var result = await QrCodeService.SubmitVotesAsync(new VoteSubmission
+            {
+                Token = Token,
+                Favorites = favorites,
+                SuperFavorite = super
+            });
+
+            Message = result
+                ? "Stimmen erfolgreich gespeichert!"
+                : "Dieser QR-Code wurde bereits verwendet.";
+
+            // OPTIONAL: redirect after vote
+            if (result)
+                Nav.NavigateTo("/thanks", true);
+        }
+        finally
+        {
+            _submitting = false;
+        }
     }
 
-    private void OnConfirmNo() => showConfirmDialog = false;
-    private void OnConfirmCancel() => showConfirmDialog = false;
-
-    private void SubmitVotes()
-    {
-        // TODO: save votes + mark token as used
-        Message = "Stimmen abgesendet!";
-    }
 }
