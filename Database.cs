@@ -7,6 +7,7 @@ public interface IQrCodeService
     Task<List<string>> InsertMultipleQrCodeTokens(List<string> tokens);
     Task<bool> TokenExistsAsync(string token);
     Task<bool> SubmitVotesAsync(VoteSubmission vote);
+    Task<bool> CreateAdminAsync(string email, string password);
 
 }
 
@@ -182,6 +183,42 @@ public class QrCodeService : IQrCodeService
             return false;
         }
     }
+    public async Task<bool> CreateAdminAsync(string email, string password)
+    {
+        try
+        {
+            using var connection = new MySqlConnection(_connectionString);
+            await connection.OpenAsync();
 
+            // Check if admin already exists
+            var checkCmd = new MySqlCommand(
+                "SELECT COUNT(*) FROM foa_admins WHERE email = @email",
+                connection);
+
+            checkCmd.Parameters.AddWithValue("@email", email);
+
+            var exists = Convert.ToInt32(await checkCmd.ExecuteScalarAsync());
+
+            if (exists > 0)
+                return false;
+
+            // Insert admin
+            var cmd = new MySqlCommand(
+                "INSERT INTO foa_admins (email, aPassword) VALUES (@email, @password)",
+                connection);
+
+            cmd.Parameters.AddWithValue("@email", email);
+            cmd.Parameters.AddWithValue("@password", password);
+
+            var result = await cmd.ExecuteNonQueryAsync();
+
+            return result > 0;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Admin creation error: " + ex.Message);
+            return false;
+        }
+    }
 
 }
