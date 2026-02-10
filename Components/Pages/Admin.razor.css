@@ -108,3 +108,137 @@
     font-size: 15px;
     color: #666;
 }
+
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 18px;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    width: 100%;
+    max-width: 380px;
+    text-align: left;
+    box-sizing: border-box; 
+}
+
+/* keep input constrained and respect box sizing so it never overflows
+   increase right padding so native spinner controls never overlap text */
+.qr-input {
+    position: relative; /* allow absolute positioning of pseudo-elements */
+    width: 100%;
+    padding: 8px 10px 8px 10px;
+    padding-right: 48px; /* room for the spinner controls placed at the far right */
+    margin-top: 8px;
+    margin-bottom: 12px;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    box-sizing: border-box; 
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Ensure number input spinner arrows are always visible and anchored to the right */
+
+/* WebKit (Chrome, Edge, Safari) - position native spin controls to the far right */
+.qr-input[type="number"]::-webkit-outer-spin-button,
+.qr-input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: inner-spin-button;
+    display: block !important;
+    opacity: 1 !important;
+    position: absolute;
+    right: 10px;                 /* anchored to right edge inside input */
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    margin: 0;
+    padding: 0;
+    pointer-events: auto;
+    box-sizing: content-box;
+}
+
+/* Some Chromium builds wrap the arrows differently; ensure container shows them */
+.qr-input[type="number"]::-webkit-inner-spin-button {
+    right: 10px;
+}
+
+/* Firefox: use native number appearance (spinner usually on right) */
+.qr-input[type="number"] {
+    -moz-appearance: textfield; /* keep predictable look but show spinner when available */
+}
+
+/* For Gecko builds that support it, try auto appearance */
+@supports (-moz-appearance: auto) {
+    .qr-input[type="number"] {
+        -moz-appearance: auto;
+    }
+}
+
+/* Place modal action buttons next to each other and center them; keep them smaller than page buttons */
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center; 
+    align-items: center;
+    margin-top: 6px;
+}
+
+.admin-box .modal-buttons .login-button,
+.admin-box .modal-buttons .logout-button {
+    width: auto;          
+    padding: 6px 12px;   
+    font-size: 0.9rem;
+    border-radius: 6px;
+    min-width: 96px;
+    margin: 0;            
+}
+
+.admin-box .modal-buttons .login-button:hover {
+    background: #205a9e;
+}
+
+.admin-box .modal-buttons .logout-button:hover {
+    background: #a82828;
+}
+
+
+@media (max-width: 420px) {
+    .admin-box {
+        width: calc(100% - 40px);
+        padding: 28px 20px;
+    }
+
+    .admin-box .modal-buttons .login-button,
+    .admin-box .modal-buttons .logout-button {
+        min-width: 84px;
+        padding: 6px 10px;
+        font-size: 0.85rem;
+    }
+
+    .modal-content {
+        padding: 14px;
+    }
+
+    .qr-input {
+        padding-right: 44px;
+    }
+
+    .qr-input[type="number"]::-webkit-outer-spin-button,
+    .qr-input[type="number"]::-webkit-inner-spin-button {
+        right: 8px;
+        width: 24px;
+        height: 24px;
+    }
+}

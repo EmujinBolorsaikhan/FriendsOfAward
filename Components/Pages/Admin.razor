@@ -40,10 +40,10 @@
                                    class="qr-input" />
 
                             <div class="modal-buttons">
-                                <button @onclick="GenerateAndDownloadQrCodes" class="btn-primary">
+                                <button @onclick="GenerateAndDownloadQrCodes" class="login-button">
                                     Download
                                 </button>
-                                <button @onclick="ClosePopup" class="btn-secondary">
+                                <button @onclick="ClosePopup" class="logout-button">
                                     Abbrechen
                                 </button>
                             </div>
@@ -120,8 +120,6 @@
 private bool showQrPopup = false;
 private int qrCodeCount = 1;
 private string QrImageBase64;
-
-
 
 
 private void GenerateQrCode()
